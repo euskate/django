@@ -101,13 +101,18 @@ def write(request):
     if request.method == 'GET':
         return render (request, 'board/write.html')
     elif request.method == 'POST':
-        img = request.FILES['img']  #name값 img
+        tmp = None
+        if 'img' in request.FILES:
+            img = request.FILES['img']  #name값 img
+            tmp = img.read()
+
         arr = [
             request.POST['title'],
             request.POST['contents'],
             request.POST['writer'],
-            img.read()
+            tmp
         ]
+
         try:
             # print(arr)
             sql = """
