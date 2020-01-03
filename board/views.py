@@ -4,24 +4,69 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from base64 import b64encode    # byte 배열을 base64로 변경함
-
+import pandas as pd
 # Create your views here.
 
 cursor = connection.cursor()    #sql문 수행을 위한 cursor 객체
 
+def dataframe(request):
+    if request.method == 'GET':
+        df = pd.read_sql(
+            """
+            SELECT NO,WRITER,HIT,REGDATE
+            FROM BOARD_TABLE1
+            """, con=connection)
+        print(df)
+        print(df.columns)
+        print(df['NO'])
+        print(type(df))
+        return render(request, 'board/dataframe.html', {'df':df.to_html(classes="table table-info", border=20 )})
+
 # 127.0.0.1:8000/board/content?no=3
 @csrf_exempt
 def edit(request):
-    return render (request, 'board/edit.html')
+    if request.method == 'GET':
+        no = request.GET.get('no', 0)    # no가 없을 경우 default값으로 0을 지정
+        sql = """
+            SELECT NO, TITLE, CONTENT
+            FROM BOARD_TABLE1
+            WHERE NO=%s
+        """
+        cursor.execute(sql, [no])
+        data = cursor.fetchone()
+        return render (request, 'board/edit.html', {"one":data})
+    elif request.method == 'POST':
+        no = request.POST['no']
+        ti = request.POST['title']
+        co = request.POST['content']
+
+        arr = [ti, co, no]
+
+        sql = """
+            UPDATE BOARD_TABLE1 SET TITLE=%s,
+            CONTENT=%s WHERE NO=%s
+        """
+
+        cursor.execute(sql, arr)
+        return redirect("/board/content?no="+no)
+
 
 @csrf_exempt
 def delete(request):
-    return render (request, 'board/delete.html')
+    if request.method == 'GET':
+        no = request.GET.get('no', 0)    #프로그램이 꺼지지 않게하는 함수
+        sql = """
+            DELETE FROM BOARD_TABLE1
+            WHERE NO=%s
+        """
+        cursor.execute(sql, [no])
+        return redirect("/board/list")
 
 @csrf_exempt
 def content(request):
     if request.method == 'GET':
-        no = request.GET.get('no',0)    #프로그램이 꺼지지 않게하는 함수
+        no = request.GET.get('no', 0)    #프로그램이 꺼지지 않게하는 함수
+        # no = request.GET['no']    #프로그램이 꺼지지 않게하는 함수
         if no == 0:
             return redirect("/board/list")
         
