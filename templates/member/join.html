@@ -1,0 +1,19 @@
+{% include "../header.html" %}
+
+<body>
+
+    {% include "../menu.html" %}
+
+    <h3>회원가입</h3>
+    <hr />
+    <!-- html 주석문 -->
+    <form action="/member/join" method="POST">
+        <p>아이디 : <input type="text" name="id" /></p>
+        <p>암호 : <input type="password" name="pw" /></p>
+        <p>암호확인 : <input type="password" /></p>
+        <p>이름 : <input type="text" name="name" /></p>
+        <p>이메일 : <input type="text" name="email" /></p>
+        <input type="submit" value="회원가입"/>
+    </form>
+</body>
+</html>

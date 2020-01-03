@@ -1,0 +1,52 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <div class="container-fluid">
+        <div style="margin: 5px;">
+            <h3>쥐마켓 게시판 찍찍</h3>
+        </div>
+    <table class="table table">
+    <tr>
+        <th scope="row" class="bg-info" style="width: 100px; min-width: 80px;">작성자</th>
+        <td>{{ one.3 }}</a></td>
+    {% comment %} </tr>
+    <tr> {% endcomment %}
+        <th class="bg-info" style="text-align: center; width: 80px;">조회수</th>
+        <td>{{ one.4 }}</td>
+    {% comment %} </tr>
+    <tr> {% endcomment %}
+        <th class="bg-info" style="text-align: center; width: 80px;">게시일</th>
+        <td>{{ one.5 }}</td>
+    </tr>
+    <tr>
+        <th class="bg-info">제목</th>
+        <td colspan="5">{{ one.1 }}</a></td>
+    </tr>
+    <tr>
+        {% autoescape on %}
+        <th class="bg-info">내용</th>
+        <td colspan="5">{{ one.2 | linebreaksbr }}</td>
+        {% endautoescape %}
+    </tr>
+    <tr>
+        <th class="bg-info">이미지</th>
+        <td colspan="5"><img src="data:;base64,{{ image }}" style="max-width: 640px;"></td>
+    </tr>
+    </table>
+    <a href="/board/list" class="btn btn-secondary">목록으로</a>
+    {% if not prev == 0 %}
+    <a href="/board/content?no={{ prev }}" class="btn btn-success">이전글</a>
+    {% else %}
+    <a href="#" class="btn btn-success disabled" >이전글</a>
+    {% endif %}
+    {% if not next == 0 %}
+    <a href="/board/content?no={{ next }}" class="btn btn-success">다음글</a>
+    {% else %}
+    <a href="#" class="btn btn-success disabled">다음글</a>
+    {% endif %}
+    <a href="/board/edit" class="btn btn-success">글수정</a>
+    <a href="/board/delete" class="btn btn-danger">글삭제</a>
+    </div>
+</body>
+</html>
