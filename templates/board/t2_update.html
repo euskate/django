@@ -1,0 +1,21 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>테이블 2 수정</h3>
+    <hr />
+    <form action="/board/t2_update" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="no" value="{{ one.no }}" />
+        <table class="table table-bordered table-secondary">
+            <tr>
+                <td>이름<input type="text" value="{{ one.name }}" name="name" /></td>
+                <td>국어<input type="text" value="{{ one.kor }}" name="kor" /></td>
+                <td>영어<input type="text" value="{{ one.eng }}" name="eng" /></td>
+                <td>수학<input type="text" value="{{ one.math }}" name="math" /></td>
+            </tr>
+        </table>
+        <input type="submit" value="수정"/>
+    </form>
+</body>
+</html>

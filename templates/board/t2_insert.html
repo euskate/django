@@ -1,0 +1,20 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>테이블 2 추가</h3>
+    <hr />
+    <form action="/board/t2_insert" method="post">
+        {% csrf_token %}
+        <table class="table table-bordered table-secondary">
+            <tr>
+                <td>이름<input type="text" name="name" /></td>
+                <td>국어<input type="text" name="kor" /></td>
+                <td>영어<input type="text" name="eng" /></td>
+                <td>수학<input type="text" name="math" /></td>
+            </tr>
+        </table>
+        <input class="btn btn-dark" type="submit" value="추가"/>
+    </form>
+</body>
+</html>

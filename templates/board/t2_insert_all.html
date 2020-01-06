@@ -1,0 +1,25 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>테이블 2 inert_all</h3>
+    <hr />
+    <form action="/board/t2_insert_all" method="post">
+        {% csrf_token %}
+        <table class="table table-bordered table-secondary">
+            {% for i in cnt %}
+            {% comment %} {% for i in "x"|rjust:5 %} {% endcomment %}
+            <tr>
+                <td>이름<input type="text" value="aa" name="name[]" /></td>
+                <td>국어<input type="text" value="34" name="kor[]" /></td>
+                <td>영어<input type="text" value="67" name="eng[]" /></td>
+                <td>수학<input type="text" value="78" name="math[]" /></td>
+            </tr>
+            {% comment %} {% endfor %} {% endcomment %}
+            {% endfor %}
+            
+        </table>
+        <input class="btn btn-dark" type="submit" value="추가"/>
+    </form>
+</body>
+</html>

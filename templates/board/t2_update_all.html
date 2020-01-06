@@ -1,0 +1,25 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>테이블 2 일괄수정</h3>
+    <hr />
+    <form action="/board/t2_update_all" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="menu" value="2" />
+        <table class="table table-bordered table-secondary">
+        {% for one in list %}
+            <tr>
+                <td>no<input type="text" style=" width: 30px;" name="no[]" value="{{ one.no }}" readonly></td>
+                <!-- <td style="margin:auto; vertical-align: middle; text-align: center;" class="table-dark"><b>{{ one.no }}</b></td> -->
+                <td>이름<input type="text" value="{{ one.name }}" name="name[]" /></td>
+                <td>국어<input type="text" value="{{ one.kor }}" name="kor[]" /></td>
+                <td>영어<input type="text" value="{{ one.eng }}" name="eng[]" /></td>
+                <td>수학<input type="text" value="{{ one.math }}" name="math[]" /></td>
+            </tr>
+        {% endfor %}
+        </table>
+        <input class="btn btn-dark" type="submit" value="수정"/>
+    </form>
+</body>
+</html>
