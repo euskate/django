@@ -6,7 +6,7 @@ from django.db import connection
 from base64 import b64encode    # byte 배열을 base64로 변경함
 import pandas as pd
 
-from .models import Table2      # models.py 파일의 Table2클래스
+from .models import Table1, Table2      # models.py 파일의 Table2클래스
 # Create your views here.
 
 cursor = connection.cursor()    #sql문 수행을 위한 cursor 객체
@@ -234,21 +234,86 @@ def content(request):
 def list(request):
     if request.method == 'GET':
         request.session['hit'] = 1 # 세션에 hit=1
+        
+        txt     = request.GET.get("txt","")
+        page    = int(request.GET.get("page",1))
+        ar      = [page*10-9, page*10]
+        # print(ar)
 
-        sql = """
-            SELECT
-                NO, TITLE, WRITER, HIT, TO_CHAR(REGDATE, 'YYYY-MM-DD HH:MI:SS')
-            FROM
-                BOARD_TABLE1
-            ORDER BY NO DESC
-        """
 
-        cursor.execute(sql)
-        data = cursor.fetchall()
+        # 페이지네이션 하기 전의 코드
+        # 
+        # sql = """
+        #     SELECT
+        #         NO, TITLE, WRITER, HIT, TO_CHAR(REGDATE, 'YYYY-MM-DD HH:MI:SS')
+        #     FROM
+        #         BOARD_TABLE1
+        #     ORDER BY NO DESC
+        # """
+        # cursor.execute(sql)
+        # data = cursor.fetchall()
+        if not txt:     # 검색어가 없는 경우
+            sql = """
+                SELECT * FROM (
+                    SELECT 
+                        NO, TITLE, WRITER, HIT, TO_CHAR(REGDATE, 'YYYY-MM-DD HH:MI:SS'),
+                        ROW_NUMBER() OVER (ORDER BY NO DESC) ROWN
+                    FROM
+                        BOARD_TABLE1
+                        )
+                WHERE ROWN BETWEEN %s AND %s
+            """
+            cursor.execute(sql, ar)
+            data = cursor.fetchall()
 
-        # print( type(data) )
-        # print( data )           #[(   ), (   )]
-        return render (request, 'board/list.html', {"list":data})
+            # # django Model 사용
+            # cnt = Table1.objects.all().count()
+            # tot = (cnt-1)//10+2
+
+            # SQL문 사용
+            sql = "SELECT COUNT(*) FROM BOARD_TABLE1"
+            cursor.execute(sql)
+            cnt = cursor.fetchone()[0]
+            tot = (cnt-1)//10+2
+
+            # print( type(data) )
+            # print( data )           #[(   ), (   )]
+        else:       # 검색어가 있는 경우
+            ar = ['%'+txt+'%', page*10-9, page*10]
+            sql = """
+                SELECT * FROM (
+                    SELECT 
+                        NO, TITLE, WRITER, HIT, TO_CHAR(REGDATE, 'YYYY-MM-DD HH:MI:SS'),
+                        ROW_NUMBER() OVER (ORDER BY NO DESC) ROWN
+                    FROM
+                        BOARD_TABLE1
+                    WHERE
+                        TITLE LIKE %s
+                        )
+                WHERE ROWN BETWEEN %s AND %s
+            """
+            cursor.execute(sql, ar)
+            data = cursor.fetchall()
+
+            # SQL문 사용
+            sql = """
+                SELECT
+                    COUNT(*)
+                FROM 
+                    BOARD_TABLE1
+                WHERE
+                    TITLE LIKE %s
+            """
+            # ar = ['%'+txt+'%']
+            # print(ar)
+            # cursor.execute 두번째 항목은 하나라도 리스트에 담아줘야 에러가 안남.
+            cursor.execute(sql, [ar[0]])
+            cnt = cursor.fetchone()[0]
+            # print(cnt)
+            tot = (cnt-1)//10+2
+            # print(tot)
+
+        return render (request, 'board/list.html', {"list":data, "pages":range(1, tot, 1)})
 
 @csrf_exempt
 def write(request):

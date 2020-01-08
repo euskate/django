@@ -6,15 +6,18 @@
         <h3>게시판 목록</h3>
         <a href="/board/write" class="btn btn-primary">글쓰기</a>
 
-        <div class="form-inline row justify-content-end">
-            <select class="form-control" id="">
-                <option value="">제목</option>
-                <option value="">내용</option>
-                <option value="">작성자</option>
-            </select>
-            <input type="text" class="form-control" placeholder="검색어" />&nbsp;
-            <input type="submit" class="btn btn-success" value="검색" />
-        </div>
+        <!-- 검색창 -->
+        <form action="/board/list" method="get">
+            <div class="form-inline row justify-content-end">
+                <select class="form-control"  id="">
+                    <option value="">제목</option>
+                    <option value="">내용</option>
+                    <option value="">작성자</option>
+                </select>
+                <input type="text" class="form-control" name="txt" placeholder="검색어" />&nbsp;
+                <input type="submit" class="btn btn-success" value="검색" />
+            </div>
+        </form>
 
 
         <table class="table">
@@ -35,6 +38,20 @@
             </tr>
             {% endfor %}
         </table>
+        
+        <!-- Bootstrap Pagination -->
+        <!-- 중앙정렬 -->
+        <div class="row justify-content-center">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                {% for i in pages %}
+                <li class="page-item"><a class="page-link" href="/board/list?page={{i}}&txt={{request.GET.txt}}">{{i}}</a></li>
+                  
+                {% endfor %}
+            </ul>
+          </nav>
+        </div>
+
     </div>
 </body>
 </html>

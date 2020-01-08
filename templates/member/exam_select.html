@@ -1,9 +1,18 @@
 {% include "../header.html" %}
 <body>
     {% include "../menu.html" %}
+    
 
     <h3>exam 목록</h3>
     <hr />
+
+    <form action="/member/exam_select" method="get">
+    <div style="text-align: right;" class="form-inline">
+        <input type="text" name="txt" />
+        <input type="submit" value="검색" />
+    </div>
+    </form>
+
     <script type="text/javascript">
         function button_event(){
         if (confirm("정말 삭제하시겠습니까??") == true){    //확인
@@ -14,7 +23,7 @@
         }
 </script>
 <form action="/member/exam_update_all" method="post" >
-    
+    <a href="/member/exam_select?no=1">반별</a>
     <table class="table">
         {% csrf_token %}
         <input type="hidden" name="menu" value="1" />
@@ -49,7 +58,11 @@
             {% endfor %}   
             
         </table>
-        
+
+        {% for i in pages %}
+        <a href="/member/exam_select?page={{i}}&txt={{request.GET.txt}}">{{i}}</a>
+        {% endfor %}
+
         <table>
             <tr>
                 <td><a href="/member/exam_insert" class="btn btn-dark">추가</a></td>
@@ -57,13 +70,13 @@
             </form>
                 <td>
                 <form action="/member/exam_insert_all" method="GET">
-                    <input type="text" style="width: 50px;" value="추가행" name="num">
-                    <input type="submit" value="일괄추가"" class="btn btn-dark">
+                    <input type="text" style="width: 50px;" value="5" name="num">
+                    <input type="submit" value="일괄추가" class="btn btn-dark">
                 </form>
                 </td>
             </tr>
         </table>
-    
+
     <!-- <a href="/member/exam_insert" class="btn btn-dark">일괄추가</a> -->
     </span>
 </body>

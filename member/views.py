@@ -15,13 +15,38 @@ cursor = connection.cursor()
 
 # Create your views here.
 
+def js_chart(request):
+    str = '100'
+    return render(request, 'member/js_chart.html', {"str":str})
+
+def js_index(request):
+    return render(request, 'member/js_index.html')
+    
 
 def exam_select(request):
+    # sum = Table2.objects.raw("SELECT  1 as no, SUM(math) smath FROM MEMBER_TABLE2")
+    # print(type(sum))
+    # print(sum.columns)
+    # print(sum[0].smath)
+    #     # SELECT SUM(math) FROM MEMBER_TABLE2 WHERE CLASS_ROOM=101
+    # list = Table2.objects.aggregate(Sum('math'))
+
+    # # SELECT NO, NAME FROM MEMBER_TABLE2
+    # list = Table2.objects.all().values('no','name')
+
+    # # SELECT * FROM MEMBER_TABLE2 ORDER BY name ASC
+    # list = Table2.objects.all().order_by('name')
+    # #list = Table2.objects.raw("SELECT * FROM MEMBER_TABLE2 ORDER BY name ASC")
+
+    # # 반별 국어, 영어, 수학 합계
+    # # SELECT SUM(kor) AS kor, SUM(eng) AS eng, SUM(math) AS math FROM MEMBER_TABLE2 GROUP BY CLASSROOM
+    # list = Table2.objects.values('classroom').annotate(kor=Sum('kor'),eng=Sum('eng'),math=Sum('math'))   
+    
     if request.method == 'GET':
         n = request.GET.get("no",0)
 
         # sum = Table2.objects.raw('SELECT SUM(math) FROM MEMBER_TABLE2')
-        print(sum)
+        # print(sum)
 
         # SELECT SUM(math) FROM MEMBER_TABLE2
         # list = Table2.objects.aggregate(Sum('math'))
@@ -37,14 +62,36 @@ def exam_select(request):
         # SELECT SUM(kor) AS kor, SUM(eng) AS eng, SUM(math) AS math FROM MEMBER_TABLE2 GROUP BY CLASSROOM
         # list = Table2.objects.values('classroom').annotate(kor=Sum('kor'),eng=Sum('eng'),math=Sum('math'))
 
-        list = Table2.objects.all()
         # return render(request, 'member/exam_select.html', {"list":rows}, {"sum":sum})
 
         # list = Table2.objects.values('classroom').annotate(kor=Sum('kor'),eng=Sum('eng'),math=Sum('math'))   
+        
+        txt     = request.GET.get("txt","")
+        page    = int(request.GET.get("page",1))
+
+        if not txt:   # 검색어가 없는 경우 전체 출력
+
+            # SQL : SELECT * FROM MEMEBER_TALBE2
+            list    = Table2.objects.all()[(page-1)*10:page*10]
+
+            # SQL : SELECT COUNT(*) FROM MEMEBER_TALBE2
+            cnt     = Table2.objects.all().count()
+            tot     = (cnt-1)//10+1
+            # 10 => 1
+            # 13 => 2
+            # 20 => 2
+            # 31 => 4
+        else:           # 검색어가 있는 경우
+            # SELECT * FROM MT2 WHERE name LIKE '%홍길동%'
+            list    = Table2.objects.filter(name__contains=txt)[(page-1)*10:page*10]
+
+            # SELECT COUNT(*) FROM MT2 WHERE name LIKE '%홍길동%'
+            cnt     = Table2.objects.filter(name__contains=txt).count()
+            tot     = (cnt-1)//10+1
     
-        return render(request, 'member/exam_select.html',{"list":list}) 
-    elif request.method == 'POST':
-        return redirect('/member/exam_select')
+        return render(request, 'member/exam_select.html', {"list":list, "pages":range(1,tot+1,1)}) 
+    # elif request.method == 'POST':
+    #     return redirect('/member/exam_select')
 
 def exam_insert(request):
     if request.method == 'GET':
