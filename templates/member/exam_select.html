@@ -1,0 +1,70 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>exam 목록</h3>
+    <hr />
+    <script type="text/javascript">
+        function button_event(){
+        if (confirm("정말 삭제하시겠습니까??") == true){    //확인
+            document.form.submit();
+        }else{   //취소
+            return;
+        }
+        }
+</script>
+<form action="/member/exam_update_all" method="post" >
+    
+    <table class="table">
+        {% csrf_token %}
+        <input type="hidden" name="menu" value="1" />
+        <table class="table table-secondary">
+            <tr>
+                <th>no</th>
+                <th>name</th>
+                <th>kor</th>
+                <th>eng</th>
+                <th>math</th>
+                <th>classroom</th>
+                <th colspan="2" style="text-align: center;">편집</th>
+            </tr>
+            {% for one in list %}
+            <tr>
+                <td>
+                    <input type="checkbox" name="chk[]" value="{{ one.no }}" >{{ one.no }}</td>
+                <td>{{ one.name }}</td>
+                <td>{{ one.kor }}</td>
+                <td>{{ one.eng }}</td>
+                <td>{{ one.math }}</td>
+                <td>{{ one.classroom }}</td>
+
+                <td><form action="/member/exam_delete" method="post">{% csrf_token %}<button type="button" onclick="button_event();">삭제</button></form></td>
+                <td><a href="/member/exam_update?no={{ one.no }}">수정</a></td>
+            </tr>
+            {% endfor %}
+            {% for i in sum %}
+            {{ sum.name }}
+            {{ sum.math }}
+
+            {% endfor %}   
+            
+        </table>
+        
+        <table>
+            <tr>
+                <td><a href="/member/exam_insert" class="btn btn-dark">추가</a></td>
+                <td><input type="submit" class="btn btn-dark" value="일괄수정" /></td>
+            </form>
+                <td>
+                <form action="/member/exam_insert_all" method="GET">
+                    <input type="text" style="width: 50px;" value="추가행" name="num">
+                    <input type="submit" value="일괄추가"" class="btn btn-dark">
+                </form>
+                </td>
+            </tr>
+        </table>
+    
+    <!-- <a href="/member/exam_insert" class="btn btn-dark">일괄추가</a> -->
+    </span>
+</body>
+</html>

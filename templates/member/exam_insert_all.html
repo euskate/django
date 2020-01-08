@@ -1,0 +1,26 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>exam 2 inert_all</h3>
+    <hr />
+    <form action="/member/exam_insert_all" method="post">
+        {% csrf_token %}
+        <table class="table table-bordered table-secondary">
+            {% for i in ran %}
+            <tr>
+                <td>이름<input style="margin-left: 10px;X width: 100px;" type="text" value="" name="name[]" /></td>
+                <td>국어<input style="margin-left: 10px; width: 100px;" type="text" value="{{ i.0 }}" name="kor[]" maxlength="3" /></td>
+                <td>영어<input style="margin-left: 10px; width: 100px;" type="text" value="{{ i.1 }}" name="eng[]" maxlength="3" /></td>
+                <td>수학<input style="margin-left: 10px; width: 100px;" type="text" value="{{ i.2 }}" name="math[]" maxlength="3" /></td>
+                <td>반<input style="margin-left: 10px; width: 100px;" type="text" value="" name="cr[]" maxlength="3" /></td>
+            </tr>
+            {% endfor %}
+            
+        </table>
+        <input class="btn btn-dark" type="submit" value="추가"/>
+    </form>
+</body>
+</html>
+{% comment %} {% for i in "x"|rjust:5 %} {% endcomment %}
+{% comment %} {% endfor %} {% endcomment %}

@@ -1,0 +1,21 @@
+{% include "../header.html" %}
+<body>
+    {% include "../menu.html" %}
+
+    <h3>exam 추가</h3>
+    <hr />
+    <form action="/member/exam_insert" method="post">
+        {% csrf_token %}
+        <table class="table table-bordered table-secondary">
+            <tr>
+                <td>이름<input style="margin-left: 10px; width: 100px;" type="text" name="name" /></td>
+                <td>국어<input style="margin-left: 10px; width: 100px;" type="text" name="kor" /></td>
+                <td>영어<input style="margin-left: 10px; width: 100px;" type="text" name="eng" /></td>
+                <td>수학<input style="margin-left: 10px; width: 100px;" type="text" name="math" /></td>
+                <td>반<input style="margin-left: 10px; width: 100px;" type="text" name="cr"" /></td>
+            </tr>
+        </table>
+        <input class="btn btn-dark" type="submit" value="추가"/>
+    </form>
+</body>
+</html>
