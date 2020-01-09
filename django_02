@@ -1,0 +1,204 @@
+$ pip install django  => 모듈 설치
+
+$ django-admin startproject web1  => web1프로젝트 생성
+
+$ cd web1 => 생성한 프로젝트로 이동
+
+$ django-admin startapp member =>  member앱 생성
+
+$ python manage.py runserver => 서버구동
+
+# 파일명 : member/urls.py #############################
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('index', views.index, name="index"),
+    path('join', views.join, name="join"),
+    path('login', views.login, name="login"),
+    path('list', views.list, name="list"),
+    path('join1', views.join1, name="join1"),
+]
+
+# 파일명 : member/views.py #############################################
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.db import connection
+
+cursor = connection.cursor()
+
+@csrf_exempt  #post로 값을 전달 받는 곳은 필수
+def join1(request):
+    if request.method == 'GET':
+        return render(request, 'member/join1.html') 
+
+def list(request):
+    # ID기준으로 오름차순
+    sql = "SELECT * FROM MEMBER ORDER BY ID ASC"
+    cursor.execute(sql) # sql문 실행
+    data = cursor.fetchall() # 결과값을 가져옴
+    print(type(data)) #list
+    print(data) #[(1,2,3,4,5), (   ), (   )]
+
+    #list.html을 표시하기 전에
+    #list변수에 data값을,  title변수에 "회원목록" 문자를
+    return render(request, 'member/list.html', {"list":data, "title":"회원목록"})
+
+def index(request):
+    #return HttpResponse("index page <hr />")
+    return render(request, 'member/index.html')
+
+def login(request):
+    #data=회원정보
+    return ""    
+
+@csrf_exempt  #post로 값을 전달 받는 곳은 필수
+def join(request):
+    if request.method == 'GET':
+        return render(request, 'member/join.html') 
+        
+    elif request.method == 'POST':
+        id = request.POST['id'] # html에서 넘어오는 값 받기
+        na = request.POST['name']
+        ag = request.POST['age']
+        pw = request.POST['pw']
+
+        ar = [id, na, ag, pw] #list로 만듬
+        print(ar)
+        #DB에 추가함
+
+        sql = """
+            INSERT INTO MEMBER(ID, NAME, AGE, PW, JOINDATE) 
+            VALUES (%s, %s, %s, %s, SYSDATE)
+            """
+        cursor.execute(sql, ar)
+
+        #크롬에서 127.0.0.1:8000/member/index  엔터키를 자동화
+        return redirect('/member/index')       
+        
+
+# 파일명 : templates/index.html #############################################
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h3>member/index 페이지</h3>    
+</body>
+</html>
+
+
+# 파일명 : templates/join.html #############################################
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>join</title>
+</head>
+<body>
+    <h3>회원가입</h3>
+    <hr />
+    <!--  주석문  -->
+    <form action="/member/join" method="post">
+        아이디 : <input type="text" name="id" /><br />
+        암호 : <input type="password" name="pw" /><br />
+        암호1 : <input type="password" /><br />
+        이름 : <input type="text" name="name" /><br />
+        나이 : <input type="text" name="age" /><br />
+        <input type="submit" value="회원가입" />
+    </form> 
+</body>
+</html>
+
+# 파일명 : templates/list.html ###############################
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{{title}}</title>
+</head>
+<body>
+    {% for one in list %}
+        {{one.0}}
+        {{one.1}}
+        {{one.2}}
+        {{one.3}}
+        {{one.4}}
+        <br />
+    {% endfor %}
+</body>
+</html>
+
+# SQLite DB연동
+$ python manage.py migrate
+클라이언트 프로그램 다운 :https://sqlitebrowser.org/dl/
+
+
+#오라클 서버 구동
+$ docker ps -a # 컨테이너 실행 확인
+$ docker start oracle12c  # 컨테이너 구동
+$ docker ps -a
+
+# DB 연동(1회만)
+$ python manage.py migrate
+
+$ python manage.py runserver
+
+
+$ docker stop oracle12c
+$ docker-machine stop
+
+
+# settings.py 일부분 ####################################
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+DATABASES = {
+    'default': {
+        # sqlite DB사용시
+        #'ENGINE': 'django.db.backends.sqlite3',
+        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+
+        #  mysql
+        # 'ENGINE': 'django.db.backends.mysql',
+        # 'NAME': 'DB명',
+        # 'USER': '아이디명',
+        # 'PASSWORD' : '암호',
+        # 'HOST' : '127.0.0.1',
+        # 'PORT' : '포토번호'
+
+        # oracle
+        'ENGINE': 'django.db.backends.oracle',
+        'NAME': 'xe', #SID
+        'USER': 'admin',
+        'PASSWORD' : '1234',
+        'HOST' : '192.168.99.100',
+        'PORT' : '32764'
+    }
+}
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]

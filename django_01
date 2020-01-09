@@ -1,0 +1,109 @@
+[오라클 데이터 베이스 설치]
+docker툴박스 다운로드 : https://github.com/docker/toolbox/releases
+
+docker search oracle-12c  => 오라클 이미지 검색
+docker-machine stop  => 도커 머신 종료, 메모리를 8G로 변경
+docker-machine start => 도커 머신 시작
+
+docker pull truevoly/oracle-12c   <= 이미지를 가져옴. 
+docker images  => 이미지 확인
+
+컨테이너 만들기 (최초 1 회만)
+docker run --name oracle12c -d -p 32765:8080 -p 32764:1521 truevoly/oracle-12c
+
+docker logs oracle12c =>설치 완료인지 확인
+docker ps -a  => 구동중인 컨테이너 확인
+docker start oracle12c => 2번째 부터) 컨테이너 구동
+docker stop oracle12c => 옵션) 컨데이너 실행 중지
+docker rm oracle12c => 옵션) 컨테이너 삭제
+
+[데이터 베이스 접속 client 프로그램 설치]
+http://ihongss.com/zip/java8.zip  => 설치
+http://ihongss.com/zip/sqldeveloper.zip => 압축만 풀기
+http://ihongss.com/zip/oracle_client.zip => 압축만 풀기
+
+계정생성
+CREATE user admin IDENTIFIED BY 1234;
+grant connect, resource, dba to admin;
+
+# 파일명 : flask01.py ######################################################
+from flask import Flask, render_template, request, redirect
+
+import cx_Oracle as oci  # pip install cx_oracle
+
+# 아이디/암호@서버주소:포트번호/SID
+conn = oci.connect('admin/1234@192.168.99.100:32764/xe', encoding="utf-8")
+cursor = conn.cursor()
+
+app = Flask(__name__)
+
+@app.route("/")
+def index():
+    sql = "SELECT * FROM MEMBER"
+    cursor.execute(sql)
+    data = cursor.fetchall() 
+    return render_template('list.html', list=data)
+
+
+@app.route("/join", methods=['GET'])
+def join():
+    return render_template('join.html')
+
+
+@app.route("/join", methods=['POST'])
+def join_post():
+    a = request.form['id']
+    b = request.form['pw']
+    c = request.form['name']
+    d = request.form['age']
+    #print("{}:{}:{}:{}".format(a,b,c,d))
+    sql = "INSERT INTO MEMBER VALUES(:id, :pw, :na, :ag, SYSDATE)"
+    cursor.execute(sql, id=a, pw=b, na=c, ag=d)
+    conn.commit()
+
+    return redirect('/') # 127.0.0.1:5000/
+    #127.0.0.1/   크롬에서 입력한것처럼 동작
+
+if __name__ == '__main__':
+    app.run(debug=True)    
+ 
+
+    
+### 파일명 : templates/join.hmtl ############################################### 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>join</title>
+</head>
+<body>
+    <h3>회원가입</h3>
+    <hr />
+    <form action="/join" method="post">
+        아이디 : <input type="text" /><br />
+        암호 : <input type="password" /><br />
+        암호1 : <input type="password" /><br />
+        이름 : <input type="text" /><br />
+        나이 : <input type="text" /><br />
+        <input type="submit" value="회원가입" />
+    </form>
+</body>
+</html>
+
+## list.html ##################################################################
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>list</title>
+</head>
+<body>
+    {% for tmp in list %}
+        {{ tmp[0] }}, {{ tmp[1] }}, {{ tmp[2] }}, {{ tmp[3] }} <br />
+    {% endfor %}
+</body>
+</html>

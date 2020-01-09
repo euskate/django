@@ -5,15 +5,197 @@ from django.db import connection
 from .models import Table2
 from django.db.models import Sum, Max, Min, Count, Avg
 import random
+import pandas as pd
 
 # django에서 제공하는 User 모델
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as a_login, logout as a_logout
 
+# 그래프 관련
+import matplotlib.pyplot as plt
+import io       # byte로 변환
+import base64   # byte를 base64로 변경
+from matplotlib import font_manager, rc     # 한글 폰트 적용
+
 
 cursor = connection.cursor()
 
 # Create your views here.
+
+def graph_test(request):
+    # dataframe을 활용하여 반별 점수 합계 그래프 그리기
+    ### 한글 적용  ###
+    font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+    rc('font', family=font_name)
+    ### 한글 적용 ###
+
+    # 반별 국영수 데이터 가져오기
+    sum_cls = Table2.objects.values("classroom").annotate(Sum("kor"), Sum("eng"), Sum("math")).order_by("classroom")
+    
+    # 데이터프레임으로 형식 변화
+    df = pd.DataFrame(sum_cls)
+    print(df)
+    print(df.columns)
+    # x축의 index를 classroom으로 변경
+    df = df.set_index('classroom')
+    df.plot(kind="bar")
+    # setting the title and label 
+    plt.title("반별 과목 점수 합계")
+    plt.xlabel("반별")
+    plt.ylabel("반 점수 합계")
+    
+    plt.draw()      # 안보이게 그림을 캡쳐
+    img = io.BytesIO()    # img에 byte 배열로 보관
+    plt.savefig(img, format="png")  # png파일 포맷으로 저장
+    img_url = base64.b64encode(img.getvalue()).decode() # 주소 저장
+    plt.close() 
+
+    ######### 연습 : 반별인원수 #############
+    cnt_cls = Table2.objects.values("classroom").annotate(Count("classroom")).order_by("classroom")
+    df2 = pd.DataFrame(cnt_cls)
+    print(df2)
+    df2 = df2.set_index('classroom')
+    df2.plot(kind="bar")
+    # plt.bar(x,y)
+    plt.title("반별 인원")
+    plt.xlabel("반")
+    plt.ylabel("인원")
+
+    plt.draw()      # 안보이게 그림을 캡쳐
+    img2 = io.BytesIO()    # img에 byte 배열로 보관
+    plt.savefig(img2, format="png")  # png파일 포맷으로 저장
+    img2_url = base64.b64encode(img2.getvalue()).decode() # 주소 저장
+    plt.close() 
+    ######### 연습 : 반별인원 #############
+
+    ######### 연습 : 반별평균 #############
+    avg_cls = Table2.objects.values("classroom").annotate(Avg("kor"), Avg("eng"), Avg("math")).order_by("classroom")
+    df3 = pd.DataFrame(avg_cls)
+    # x축의 index를 classroom으로 변경
+    df3 = df3.set_index('classroom')
+    df3.plot(kind="bar")
+    # setting the title and label 
+    plt.title("반별 / 과목 평균")
+    plt.xlabel("반별")
+    plt.ylabel("평균점수")
+    
+    plt.draw()      # 안보이게 그림을 캡쳐
+    img3 = io.BytesIO()    # img에 byte 배열로 보관
+    plt.savefig(img3, format="png")  # png파일 포맷으로 저장
+    img3_url = base64.b64encode(img3.getvalue()).decode() # 주소 저장
+    plt.close() 
+    ######### 연습 : 반별평균 #############
+
+    return render(request, 'member/graph_test.html', {"graph1":'data:;base64,{}'.format(img_url), "graph2":'data:;base64,{}'.format(img2_url), "graph3":'data:;base64,{}'.format(img3_url)})
+
+    # x = ['딸기라떼', '딸기스무디', '딸기스무디Up', '밀크쉐이크', '블루베리스무디', '블루베리요거트스무디', '블루베리요거트스무디Up', '아이스아메리카노', '자바 프라푸치노', '조리퐁쉐이크', '청포도스무디Up', '초코민트자스치노', '초코자바칩 자스치노', '카페모카Hot', '카페모카Ice']
+    # y = [ 1,2,2,2,2,1,2,1,1,1,1,1,1,1,1 ]
+
+def graph(request):
+    # SELECT SUM("kor") FROM MEMBER_TABLE2
+    sum_kor = Table2.objects.aggregate(Sum("kor"))
+    sum_eng = Table2.objects.aggregate(Sum("eng"))
+    sum_math = Table2.objects.aggregate(Sum("math"))
+
+    print(sum_kor, sum_eng, sum_math)
+    
+    # SELECT SUM("kor") AS kSum FROM MEMBER_TABLE2
+    sum_kor_1 = Table2.objects.aggregate(kSum=Sum("kor"))
+    print(sum_kor_1)
+
+    # SELECT SUM("kor") AS kSum FROM MEMBER_TABLE2 WHERE CLASSROOM=102
+    sum_kor_102 = Table2.objects.filter(classroom='102').aggregate(kSum=Sum("kor"))
+    print(sum_kor_102)
+
+    # SELECT SUM("kor") AS kSum FROM MEMBER_TABLE2 WHERE KOR > 80
+    # > gt, >= gte, < lt, <=lte
+    sum_kor_gt80 = Table2.objects.filter(kor__gt=10).aggregate(kSum=Sum("kor"))
+    print(sum_kor_gt80)
+
+    # 반별 합계
+    # SELECT SUM("kor") sum1, SUM("eng") sum2, 
+    #       SUM("math") sum3
+    # FROM MEMBER_TABLE2
+    # GROUP BY CLASSROOM
+    sum_cls = Table2.objects.values("classroom").annotate(sumK=Sum("kor"), sumE=Sum("eng"), sumM=Sum("math"))
+    print(sum_cls)
+    print(sum_cls.query)
+    li_sum_cls = list(sum_cls)
+    print(li_sum_cls)
+    
+    # SELECT "MEMBER_TABLE2"."CLASSROOM", SUM("MEMBER_TABLE2"."KOR") AS "SUMK", SUM("MEMBER_TABLE2"."ENG") AS "SUME", SUM("MEMBER_TABLE2"."MATH") AS "SUMM" FROM "MEMBER_TABLE2" GROUP BY "MEMBER_TABLE2"."CLASSROOM"
+
+    x = ['국어', '영어', '수학']
+    y = [sum_kor['kor__sum'], sum_eng['eng__sum'], sum_math['math__sum']]
+
+    font_name = font_manager.FontProperties(fname="c:/Windows/Fonts/malgun.ttf").get_name()
+    rc('font', family=font_name)
+
+    ######### 처음 그려본 그래프 세팅 #########
+    # x = list(range(10, 100, 10))
+    # y = [ 2,3,4,9,2,5,3,4,7]
+    
+    # plt.title("AGES & PERSON")
+    # plt.xlabel("연령대")
+    # plt.ylabel("사람수")
+    ######### 처음 그려본 그래프 세팅 #########
+
+    plt.bar(x,y)
+    plt.title("과목 & 합계")
+    plt.xlabel("과목")
+    plt.ylabel("합계")
+
+    # plt.show()    # 표시
+    plt.draw()      # 안보이게 그림을 캡쳐
+    img = io.BytesIO()    # img에 byte 배열로 보관
+    plt.savefig(img, format="png")  # png파일 포맷으로 저장
+    img_url = base64.b64encode(img.getvalue()).decode()
+    plt.close()     # 그래프 종료
+
+
+    ########## 평균 구하기 ##############
+    avg_kor = Table2.objects.aggregate(Avg("kor"))
+    avg_eng = Table2.objects.aggregate(Avg("eng"))
+    avg_math = Table2.objects.aggregate(Avg("math"))
+
+    print(avg_kor, avg_eng, avg_math)
+
+    avg_x = ['kor', 'eng', 'math']
+    avg_y = [avg_kor['kor__avg'], avg_eng['eng__avg'], avg_math['math__avg']]
+
+    plt.bar(avg_x,avg_y)
+    plt.title("과목 & 평균")
+    plt.xlabel("과목")
+    plt.ylabel("평균")
+    plt.draw()      # 안보이게 그림을 캡쳐
+    avg_img = io.BytesIO()    # img에 byte 배열로 보관
+    plt.savefig(avg_img, format="png")  # png파일 포맷으로 저장
+    avg_img_url = base64.b64encode(avg_img.getvalue()).decode()
+    # plt.close()     # 그래프 종료
+    ########## 평균 구하기 ##############
+
+    return render(request, 'member/graph.html', {"graph1":'data:;base64,{}'.format(img_url), "graph2":'data:;base64,{}'.format(avg_img_url)})  
+
+def dataframe(request):
+    # SELECT * FROM MEMBER_TABLE2
+    # rows = Table2.objects.all()
+
+
+    # SELECT NO, NAME, KOR FROM MEMBER_TABLE2
+    rows = list(Table2.objects.all().values("no", "name", "kor"))[0:10]
+    print(rows)
+    # print(type(rows))   # QuerySet -> list로 변경
+    # 1. QuerySet -> list로 변경 [{  }, {  }, {  } ... ]
+    
+    # 2. list -> dataframe으로 변경
+    df = pd.DataFrame(rows)
+    print(df)
+
+    # 2. dataframe -> list로 변경 [[   ], [   ], [   ] ... ]
+    rows1 = df.values.tolist()
+
+    print(rows1)
+    return render(request, 'member/dataframe.html', {"df_table":df.to_html(),"list":rows})
 
 def js_chart(request):
     str = '100'
@@ -188,7 +370,7 @@ def exam_update(request):
         return redirect('/member/exam_select')
 
 def exam_delete(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
         n = request.GET.get("no", 0)
         row = Table2.objects.get(no=n)
         row.delete()
@@ -278,16 +460,16 @@ def index(request):
     # return HttpResponse("index page <hr />") # 이렇게 작업하면 힘들다.
     return render(request, 'member/index.html') # 파일을 만들어 render 한다.
 
-def list(request):
+def list1(request):
     sql = "SELECT * FROM MEMBER ORDER BY ID ASC"
     cursor.execute(sql)     # sql 문 실행
     data = cursor.fetchall()    # 결과값을 가져옴
     print(type(data))       # list (DB 종류마다 다르다. ex)mySQL의 경우 튜플)
     print(data)             # [( ),( ),...]
 
-    # list.html을 표시하기 전에
+    # list1.html을 표시하기 전에
     # list변수에 data값을, title변수에 "회원목록" 문자를
-    return render(request, 'member/list.html', {"list":data, "title":"회원목록"})
+    return render(request, 'member/list1.html', {"list":data, "title":"회원목록"})
 
 @csrf_exempt    #post로 값을 전달 받는 곳은 필수, 보안상의 이유
 def login(request):

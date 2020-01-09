@@ -13,15 +13,6 @@
     </div>
     </form>
 
-    <script type="text/javascript">
-        function button_event(){
-        if (confirm("정말 삭제하시겠습니까??") == true){    //확인
-            document.form.submit();
-        }else{   //취소
-            return;
-        }
-        }
-</script>
 <form action="/member/exam_update_all" method="post" >
     <a href="/member/exam_select?no=1">반별</a>
     <table class="table">
@@ -47,7 +38,10 @@
                 <td>{{ one.math }}</td>
                 <td>{{ one.classroom }}</td>
 
-                <td><form action="/member/exam_delete" method="post">{% csrf_token %}<button type="button" onclick="button_event();">삭제</button></form></td>
+                <td><a id="del" href="#" onclick="if(window.confirm('정말 삭제하시겠습니까?')) {
+                    location.replace('/member/exam_delete?no={{ one.no }}')
+                }
+                    ">삭제</td>
                 <td><a href="/member/exam_update?no={{ one.no }}">수정</a></td>
             </tr>
             {% endfor %}
