@@ -236,6 +236,7 @@ def list(request):
         request.session['hit'] = 1 # 세션에 hit=1
         
         txt     = request.GET.get("txt","")
+        menu    = request.GET.get("menu","")
         page    = int(request.GET.get("page",1))
         ar      = [page*10-9, page*10]
         # print(ar)
@@ -252,6 +253,7 @@ def list(request):
         # """
         # cursor.execute(sql)
         # data = cursor.fetchall()
+
         if not txt:     # 검색어가 없는 경우
             sql = """
                 SELECT * FROM (

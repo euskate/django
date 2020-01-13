@@ -16,10 +16,16 @@
 #         return self.headline
 
 
-import random
+# import random
 
 
-a = [[random.randint(0, 100) for j in range(3)] for i in range(5)]
-print(a)
-print(a[0][0])
-print(a[1][0])
+# a = [[random.randint(0, 100) for j in range(3)] for i in range(5)]
+# print(a)
+# print(a[0][0])
+# print(a[1][0])
+
+import requests as rq
+
+url = "https://pjt3591oo.github.io"
+
+rq.post(url)
